@@ -39,6 +39,8 @@ Aplikasi ini menggunakan Supabase CLI untuk mengelola database.
    ```
 
 ## 3. Menjalankan Server
+
+### Opsi A: Menggunakan Bun (Lokal)
 1. **Install Dependencies** (jika belum):
    ```bash
    bun install
@@ -48,6 +50,14 @@ Aplikasi ini menggunakan Supabase CLI untuk mengelola database.
    ```bash
    bun run dev
    ```
+
+### Opsi B: Menggunakan Docker (VPS/Production)
+1. **Pastikan Docker Terinstal**.
+2. **Jalankan Container**:
+   ```bash
+   docker compose up -d --build
+   ```
+   Aplikasi akan berjalan di background.
 
 Server akan berjalan di `http://localhost:3000`.
 
