@@ -86,5 +86,49 @@ Setelah server berjalan, Anda dapat melihat dokumentasi API secara visual di:
 - `PATCH /relay/:id`: Update status relay.
   - Body: `{ "reported_status": "ON" }`
 
-### Statistik
-- `GET /statistik`: Mendapatkan ringkasan data harian, mingguan, dan bulanan.
+### Statistik (Server-Sent Events)
+- `GET /statistik`: Mendapatkan stream data statistik real-time.
+  - **Format**: Server-Sent Events (SSE).
+  - **Update**: Setiap 5 detik.
+
+#### Cara Menggunakan SSE di Frontend (JavaScript)
+```javascript
+const eventSource = new EventSource('http://localhost:3000/statistik');
+
+eventSource.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  console.log('Update Statistik:', data);
+  // Update UI chart/grafik di sini
+};
+
+eventSource.onerror = (error) => {
+  console.error('SSE Error:', error);
+  eventSource.close();
+};
+```
+
+#### Contoh Preview Response (JSON)
+Data yang dikirim melalui stream akan memiliki format berikut:
+```json
+{
+  "celcius": {
+    "daily": [
+      { "time": "2025-12-22T08:00:00.000Z", "value": 28.5 },
+      { "time": "2025-12-22T09:00:00.000Z", "value": 29.1 }
+    ],
+    "weekly": [
+      { "time": "2025-12-21", "value": 28.0 },
+      { "time": "2025-12-22", "value": 28.8 }
+    ],
+    "monthly": [
+      { "time": "2025-12-01", "value": 27.5 },
+      { "time": "2025-12-02", "value": 27.8 }
+    ]
+  },
+  "humidity": {
+    "daily": [...],
+    "weekly": [...],
+    "monthly": [...]
+  }
+}
+```
