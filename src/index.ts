@@ -363,6 +363,62 @@ The \`updated_at\` timestamp is automatically generated.`,
       }
     }
   })
+  .get("/relay/:id", async ({ params: { id }, set }) => {
+    const { data, error } = await supabase.from("relay").select("*").eq("id", id).single();
+    if (error) {
+      if (error.code === 'PGRST116') {
+        set.status = 404;
+        return { error: "Relay data not found" };
+      }
+      set.status = 500;
+      return { error: error.message };
+    }
+    return data;
+  }, {
+    tags: ['Relay'],
+    params: t.Object({
+      id: t.Number({ description: 'Relay record ID to retrieve' })
+    }),
+    response: {
+      200: t.Object({
+        id: t.Number({ description: 'Unique identifier' }),
+        reported_status: t.Union([t.Literal("ON"), t.Literal("OFF")], { description: 'ON = humidifier active, OFF = humidifier inactive' }),
+        mode: t.Union([t.Literal("AUTO"), t.Literal("MANUAL")], { description: 'AUTO = automatic control, MANUAL = manual control' }),
+        manual_since: t.Union([t.String(), t.Null()], { description: 'Timestamp if manual mode, null if auto' }),
+        updated_at: t.String({ description: 'ISO 8601 timestamp of last update' })
+      }),
+      404: t.Object({ error: t.String({ description: 'Data not found message' }) }),
+      500: t.Object({ error: t.String() })
+    },
+    detail: { 
+      summary: 'Get single relay state by ID',
+      description: `Retrieves a specific relay state record by its ID.
+
+**Field Descriptions:**
+- \`reported_status\`: ON (humidifier active) or OFF (humidifier inactive)
+- \`mode\`: AUTO (automatic control) or MANUAL (manual control)
+- \`manual_since\`: Timestamp when manual mode was activated, or null if in AUTO mode
+- \`updated_at\`: Last time this state was recorded or updated
+
+Returns 404 if the relay record is not found.`,
+      examples: {
+        'Success response': {
+          value: {
+            id: 1,
+            reported_status: "ON",
+            mode: "AUTO",
+            manual_since: null,
+            updated_at: "2025-12-26T10:30:00.000Z"
+          }
+        },
+        'Not found response': {
+          value: {
+            error: "Relay data not found"
+          }
+        }
+      }
+    }
+  })
   .patch("/relay/:id", async ({ params: { id }, body, set }) => {
     const { error } = await supabase.from("relay").update({ ...body, updated_at: new Date().toISOString() }).eq("id", id);
     if (error) {
